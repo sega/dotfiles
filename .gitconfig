@@ -1,0 +1,11 @@
+[alias]
+    co = checkout
+    st = status
+    ci = commit
+[user]
+	name = Sebastian M. Gauck
+	email = smg@42ls.de 
+[color]
+    status = auto
+    diff = auto
+    branch = auto
