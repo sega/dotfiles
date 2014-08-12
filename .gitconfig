@@ -9,3 +9,7 @@
     status = auto
     diff = auto
     branch = auto
+[push]
+	default = matching
+[core]
+	editor = vim

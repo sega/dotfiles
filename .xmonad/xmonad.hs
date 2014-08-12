@@ -15,10 +15,14 @@ import XMonad.Layout.ResizableTile
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.SetWMName
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Util.Run(spawnPipe)
+import XMonad.Util.EZConfig(additionalKeys)
 
 import System.IO
 import System.Exit
+
+import Graphics.X11.ExtraTypes.XF86
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -27,8 +31,8 @@ import qualified Data.Map        as M
 -- certain contrib modules.
 --
 
-myTerminal = "konsole"
--- myTerminal      = "urxvtc"
+-- myTerminal = "xterm"
+myTerminal      = "terminator"
 
 -- Width of the window border in pixels.
 --
@@ -41,20 +45,6 @@ myBorderWidth   = 2
 --
 myModMask       = mod4Mask
 
--- The mask for the numlock key. Numlock status is "masked" from the
--- current modifier status, so the keybindings will work with numlock on or
--- off. You may need to change this on some systems.
---
--- You can find the numlock modifier by running "xmodmap" and looking for a
--- modifier with Num_Lock bound to it:
---
--- > $ xmodmap | grep Num
--- > mod2        Num_Lock (0x4d)
---
--- Set numlockMask = 0 if you don't have a numlock key, or want to treat
--- numlock status separately.
---
-myNumlockMask   = mod2Mask
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -75,13 +65,13 @@ myFocusedBorderColor = "#00ff00"
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
-myKeys sp conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
+myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
     -- launch a terminal
     [ ((modMask .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
     -- launch dmenu
-    , ((modMask,               xK_p     ), spawnHere sp "exe=`dmenu_path | dmenu -nb \"#000000\" -nf \"#dddddd\" -sb \"#00ffff\" -sf \"#000000\" -fn \"-*-Fixed-Bold-R-Normal-*-13-*-*-*-*-*-*-*\"` && eval \"exec $exe\"")
+    , ((modMask,               xK_p     ), spawnHere "exe=`dmenu_path | dmenu -nb \"#000000\" -nf \"#dddddd\" -sb \"#00ffff\" -sf \"#000000\" -fn \"-*-Fixed-Bold-R-Normal-*-13-*-*-*-*-*-*-*\"` && eval \"exec $exe\"")
 
     -- launch gmrun
     , ((modMask .|. shiftMask, xK_p     ), spawn "gmrun")
@@ -296,8 +286,7 @@ myStartupHook = setWMName "LG3D"
 --
 main = do
   xmproc <- spawnPipe "/usr/bin/xmobar /home/smg/.xmobarrc"
-  spawner <- mkSpawner
-  xmonad (defaults xmproc spawner)
+  xmonad (defaults xmproc)
 
 -- A structure containing your configuration settings, overriding
 -- fields in the default config. Any you don't override, will 
@@ -305,24 +294,24 @@ main = do
 -- 
 -- No need to modify this.
 --
-defaults xmproc spawner = defaultConfig {
+defaults xmproc = defaultConfig {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
         borderWidth        = myBorderWidth,
         modMask            = myModMask,
-        numlockMask        = myNumlockMask,
         workspaces         = myWorkspaces,
         normalBorderColor  = myNormalBorderColor,
         focusedBorderColor = myFocusedBorderColor,
 
       -- key bindings
-        keys               = myKeys spawner,
+        keys               = myKeys,
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
         layoutHook         = avoidStruts $ myLayout,
-        manageHook         = manageSpawn spawner <+> manageDocks <+> myManageHook <+> manageHook defaultConfig,
+        manageHook         = manageSpawn <+> manageDocks <+> myManageHook <+> manageHook defaultConfig,
         logHook            = myLogHook xmproc,
-        startupHook        = myStartupHook
+	handleEventHook    = fullscreenEventHook
+        -- startupHook        = myStartupHook
     }
